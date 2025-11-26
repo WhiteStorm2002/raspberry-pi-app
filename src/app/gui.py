@@ -443,37 +443,25 @@ class ConfigGUI:
     
     def _start_slideshow(self):
         """Startet die Slideshow"""
-        # Erst speichern (ohne Messagebox)
-        if not self._save_config_silent():
-            return
-        
-        # Fenster verstecken
-        self.root.withdraw()
-        
-        # Callback aufrufen
-        if self.on_start_callback:
-            self.on_start_callback()
-    
-    def _save_config_silent(self):
-        """Speichert die Konfiguration ohne Messagebox (für Start-Button)"""
         try:
-            # Validiere Display-Modus
+            # Validiere und speichere Config ohne Messagebox
             display_mode = self.vars['display_mode'].get()
+            
+            # Validierung
             if not self.config_manager.validate_display_mode(display_mode):
                 messagebox.showerror("Fehler", 
                                    f"Ungültiger Display-Modus: {display_mode}\n"
                                    "Bitte wähle einen gültigen Modus!")
-                return False
+                return
             
-            # Prüfe ob Modus verfügbar ist
             if display_mode not in self.available_modes:
                 messagebox.showerror("Fehler", 
                                    f"Modus '{display_mode}' ist nicht verfügbar!\n\n"
                                    f"Grund: PIR-Sensor nicht erkannt.\n"
                                    f"Verfügbare Modi: {', '.join(self.available_modes)}")
-                return False
+                return
             
-            # Erstelle neue Config mit Werten aus GUI
+            # Erstelle neue Config
             new_config = AppConfig(
                 display_mode=display_mode,
                 pir_pin=self.vars['pir_pin'].get(),
@@ -489,24 +477,31 @@ class ConfigGUI:
                 show_sensor_status=self.vars['show_sensor_status'].get()
             )
             
-            # Speichern
-            if self.config_manager.save(new_config):
-                self.config = new_config
-                logger.info("Konfiguration gespeichert (für Start)")
-                return True
-            else:
+            # Speichern (OHNE Messagebox!)
+            if not self.config_manager.save(new_config):
                 messagebox.showerror("Fehler", "Konfiguration konnte nicht gespeichert werden!")
-                return False
+                return
+            
+            self.config = new_config
+            logger.info("Konfiguration gespeichert, starte Slideshow...")
+            
+            # Fenster verstecken
+            self.root.withdraw()
+            
+            # Callback aufrufen
+            if self.on_start_callback:
+                self.on_start_callback()
                 
         except Exception as e:
-            messagebox.showerror("Fehler", f"Fehler beim Speichern: {e}")
-            logger.error(f"Fehler beim Speichern der Konfiguration: {e}")
-            return False
+            messagebox.showerror("Fehler", f"Fehler beim Starten: {e}")
+            logger.error(f"Fehler beim Starten der Slideshow: {e}")
     
     def _quit(self):
         """Beendet die Anwendung"""
         if messagebox.askokcancel("Beenden", "Möchten Sie die Anwendung wirklich beenden?"):
-            self.root.quit()
+            self.root.destroy()
+            import sys
+            sys.exit(0)
     
     def show(self):
         """Zeigt das Konfigurationsfenster"""

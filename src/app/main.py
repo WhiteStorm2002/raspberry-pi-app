@@ -88,8 +88,9 @@ class EntranceDisplayApp:
         try:
             logger.info("Starte Slideshow...")
             
-            # Lade aktuelle Konfiguration
+            # Lade aktuelle Konfiguration (neu laden!)
             config = self.config_manager.get()
+            logger.info(f"Config geladen: Modus={config.display_mode}, Bilder={config.image_folder}")
             
             # Prüfe ob Modus verfügbar ist
             available_modes = self.sensor_detector.get_available_modes()
@@ -105,21 +106,24 @@ class EntranceDisplayApp:
                 self.config_gui.show()
                 return
             
-            # Erstelle Slideshow-Fenster falls noch nicht vorhanden
-            if not self.slideshow_window:
-                self.slideshow_window = SlideshowWindow(
-                    config=config,
-                    on_exit_callback=self._stop_slideshow
-                )
+            # Erstelle Slideshow-Fenster NEU (mit aktueller Config!)
+            logger.info("Erstelle Slideshow-Fenster...")
+            self.slideshow_window = SlideshowWindow(
+                config=config,
+                on_exit_callback=self._stop_slideshow
+            )
             
             # Verstecke Config-GUI
             self.config_gui.hide()
             
             # Zeige und starte Slideshow
+            logger.info("Zeige Slideshow-Fenster...")
             self.slideshow_window.show()
+            
+            logger.info("Starte Slideshow...")
             self.slideshow_window.start()
             
-            logger.info("Slideshow gestartet")
+            logger.info("Slideshow erfolgreich gestartet!")
             
         except Exception as e:
             logger.error(f"Fehler beim Starten der Slideshow: {e}")
