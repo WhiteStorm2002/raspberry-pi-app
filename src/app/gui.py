@@ -431,8 +431,9 @@ class ConfigGUI:
             # Speichern
             if self.config_manager.save(new_config):
                 self.config = new_config
-                messagebox.showinfo("Erfolg", "Konfiguration gespeichert!")
                 logger.info("Konfiguration gespeichert")
+                # Zeige Erfolg-Meldung nur beim manuellen Speichern
+                messagebox.showinfo("Erfolg", "Konfiguration gespeichert!")
             else:
                 messagebox.showerror("Fehler", "Konfiguration konnte nicht gespeichert werden!")
                 
@@ -442,8 +443,9 @@ class ConfigGUI:
     
     def _start_slideshow(self):
         """Startet die Slideshow"""
-        # Erst speichern
-        self._save_config()
+        # Erst speichern (ohne Messagebox)
+        if not self._save_config_silent():
+            return
         
         # Fenster verstecken
         self.root.withdraw()
@@ -451,6 +453,55 @@ class ConfigGUI:
         # Callback aufrufen
         if self.on_start_callback:
             self.on_start_callback()
+    
+    def _save_config_silent(self):
+        """Speichert die Konfiguration ohne Messagebox (für Start-Button)"""
+        try:
+            # Validiere Display-Modus
+            display_mode = self.vars['display_mode'].get()
+            if not self.config_manager.validate_display_mode(display_mode):
+                messagebox.showerror("Fehler", 
+                                   f"Ungültiger Display-Modus: {display_mode}\n"
+                                   "Bitte wähle einen gültigen Modus!")
+                return False
+            
+            # Prüfe ob Modus verfügbar ist
+            if display_mode not in self.available_modes:
+                messagebox.showerror("Fehler", 
+                                   f"Modus '{display_mode}' ist nicht verfügbar!\n\n"
+                                   f"Grund: PIR-Sensor nicht erkannt.\n"
+                                   f"Verfügbare Modi: {', '.join(self.available_modes)}")
+                return False
+            
+            # Erstelle neue Config mit Werten aus GUI
+            new_config = AppConfig(
+                display_mode=display_mode,
+                pir_pin=self.vars['pir_pin'].get(),
+                screen_timeout=self.vars['screen_timeout'].get(),
+                work_start_time=self.vars['work_start_time'].get(),
+                work_end_time=self.vars['work_end_time'].get(),
+                image_folder=self.vars['image_folder'].get(),
+                image_duration=self.vars['image_duration'].get(),
+                random_order=self.vars['random_order'].get(),
+                autostart=self.vars['autostart'].get(),
+                fullscreen=self.vars['fullscreen'].get(),
+                debug_mode=self.vars['debug_mode'].get(),
+                show_sensor_status=self.vars['show_sensor_status'].get()
+            )
+            
+            # Speichern
+            if self.config_manager.save(new_config):
+                self.config = new_config
+                logger.info("Konfiguration gespeichert (für Start)")
+                return True
+            else:
+                messagebox.showerror("Fehler", "Konfiguration konnte nicht gespeichert werden!")
+                return False
+                
+        except Exception as e:
+            messagebox.showerror("Fehler", f"Fehler beim Speichern: {e}")
+            logger.error(f"Fehler beim Speichern der Konfiguration: {e}")
+            return False
     
     def _quit(self):
         """Beendet die Anwendung"""
