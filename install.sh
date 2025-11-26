@@ -107,8 +107,7 @@ install_app() {
     
     # Kopiere Dateien
     cp -r src/* "${APP_DIR}/"
-    cp requirements.txt "${APP_DIR}/"
-    cp setup.py "${APP_DIR}/"
+    cp requirements.txt "${APP_DIR}/" 2>/dev/null || true
     
     # Erstelle virtuelle Umgebung
     print_info "Erstelle virtuelle Python-Umgebung..."
@@ -116,18 +115,26 @@ install_app() {
     
     # Aktiviere venv und installiere Abhängigkeiten
     print_info "Installiere Python-Abhängigkeiten..."
-    "${VENV_DIR}/bin/pip" install --upgrade pip
-    "${VENV_DIR}/bin/pip" install -r "${APP_DIR}/requirements.txt"
+    "${VENV_DIR}/bin/pip" install --upgrade pip setuptools wheel
     
-    # Installiere die App
-    cd "${APP_DIR}"
-    "${VENV_DIR}/bin/pip" install -e .
+    # Installiere Requirements einzeln (robuster)
+    if [ -f "${APP_DIR}/requirements.txt" ]; then
+        "${VENV_DIR}/bin/pip" install -r "${APP_DIR}/requirements.txt" || {
+            print_warning "Einige Pakete konnten nicht installiert werden, versuche einzeln..."
+            # Installiere nur die wichtigsten Pakete
+            "${VENV_DIR}/bin/pip" install RPi.GPIO gpiozero Pillow || true
+        }
+    fi
     
     print_success "Anwendung installiert"
 }
 
 create_service() {
     print_info "Erstelle systemd Service..."
+    
+    # Ermittle den aktuellen Benutzer (falls nicht root)
+    REAL_USER="${SUDO_USER:-pi}"
+    USER_HOME=$(eval echo ~${REAL_USER})
     
     cat > "/etc/systemd/system/${SERVICE_NAME}" << EOF
 [Unit]
@@ -137,11 +144,12 @@ Wants=graphical.target
 
 [Service]
 Type=simple
-User=pi
+User=${REAL_USER}
 Environment="DISPLAY=:0"
-Environment="XAUTHORITY=/home/pi/.Xauthority"
+Environment="XAUTHORITY=${USER_HOME}/.Xauthority"
+Environment="PYTHONPATH=${APP_DIR}"
 WorkingDirectory=${APP_DIR}
-ExecStart=${VENV_DIR}/bin/python -m app.main
+ExecStart=${VENV_DIR}/bin/python3 -m app.main
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal

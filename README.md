@@ -72,11 +72,16 @@ cp /pfad/zu/deinen/bildern/* ~/Pictures/slideshow/
 5. Anwendung starten:
 
 ```bash
-# Manuell starten
-python3 -m app.main
-
-# Oder als Service
+# Methode 1: Als Service (empfohlen)
 sudo systemctl start raspi-app.service
+
+# Methode 2: Direkt mit run.sh
+chmod +x run.sh
+./run.sh
+
+# Methode 3: Manuell
+cd /opt/raspi-app
+./venv/bin/python3 -m app.main
 ```
 
 ### Update durchführen
@@ -442,6 +447,25 @@ sudo journalctl -u raspi-app.service -n 50
 
 # Service neu starten
 sudo systemctl restart raspi-app.service
+
+# Direkt starten (ohne Service)
+./run.sh
+```
+
+### Installation schlägt fehl
+
+```bash
+# Fehler: "Failed to build editable"
+# Lösung: Verwende aktualisiertes install.sh
+
+# Manuelle Installation der wichtigsten Pakete:
+sudo apt-get update
+sudo apt-get install -y python3-pip python3-venv python3-tk
+sudo apt-get install -y python3-pil python3-pil.imagetk
+sudo apt-get install -y libjpeg-dev zlib1g-dev
+
+# Dann erneut installieren:
+sudo ./install.sh
 ```
 
 ### Autostart funktioniert nicht
