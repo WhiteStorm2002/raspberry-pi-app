@@ -289,7 +289,7 @@ class ConfigGUI:
         row += 1
         
         # Mauszeiger verstecken
-        self.vars['hide_cursor'] = tk.BooleanVar(value=self.config.hide_cursor)
+        self.vars['hide_cursor'] = tk.BooleanVar(value=getattr(self.config, 'hide_cursor', True))
         ttk.Checkbutton(main_frame, text="Mauszeiger in Slideshow verstecken", 
                        variable=self.vars['hide_cursor']).grid(row=row, column=0, 
                                                                 columnspan=2, sticky=tk.W, pady=5)
@@ -419,6 +419,12 @@ class ConfigGUI:
                                    f"Verfügbare Modi: {', '.join(self.available_modes)}")
                 return
             
+            # Hole hide_cursor Wert (mit Fallback)
+            try:
+                hide_cursor_value = self.vars['hide_cursor'].get()
+            except:
+                hide_cursor_value = True
+            
             # Erstelle neue Config mit Werten aus GUI
             new_config = AppConfig(
                 display_mode=display_mode,
@@ -431,7 +437,7 @@ class ConfigGUI:
                 random_order=self.vars['random_order'].get(),
                 autostart=self.vars['autostart'].get(),
                 fullscreen=self.vars['fullscreen'].get(),
-                hide_cursor=self.vars['hide_cursor'].get(),
+                hide_cursor=hide_cursor_value,
                 debug_mode=self.vars['debug_mode'].get(),
                 show_sensor_status=self.vars['show_sensor_status'].get()
             )
@@ -469,6 +475,12 @@ class ConfigGUI:
                                    f"Verfügbare Modi: {', '.join(self.available_modes)}")
                 return
             
+            # Hole hide_cursor Wert (mit Fallback)
+            try:
+                hide_cursor_value = self.vars['hide_cursor'].get()
+            except:
+                hide_cursor_value = True
+            
             # Erstelle neue Config
             new_config = AppConfig(
                 display_mode=display_mode,
@@ -481,7 +493,7 @@ class ConfigGUI:
                 random_order=self.vars['random_order'].get(),
                 autostart=self.vars['autostart'].get(),
                 fullscreen=self.vars['fullscreen'].get(),
-                hide_cursor=self.vars['hide_cursor'].get(),
+                hide_cursor=hide_cursor_value,
                 debug_mode=self.vars['debug_mode'].get(),
                 show_sensor_status=self.vars['show_sensor_status'].get()
             )

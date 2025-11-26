@@ -46,7 +46,7 @@ class SlideshowWindow:
             self.root.geometry("1920x1080")
         
         # Mauszeiger verstecken (wenn aktiviert)
-        cursor_style = 'none' if config.hide_cursor else ''
+        cursor_style = 'none' if getattr(config, 'hide_cursor', True) else ''
         self.root.configure(bg='black', cursor=cursor_style)
         self.root.protocol("WM_DELETE_WINDOW", self._on_closing)
         
@@ -377,7 +377,7 @@ class SlideshowWindow:
         self.root.focus_force()
         
         # Verstecke Mauszeiger (wenn aktiviert)
-        if self.config.hide_cursor:
+        if getattr(self.config, 'hide_cursor', True):
             self.root.configure(cursor='none')
         
         # Stelle sicher dass Vollbild aktiv ist
