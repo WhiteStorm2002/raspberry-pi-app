@@ -92,19 +92,20 @@ class EntranceDisplayApp:
             config = self.config_manager.get()
             logger.info(f"Config geladen: Modus={config.display_mode}, Bilder={config.image_folder}")
             
-            # Prüfe ob Modus verfügbar ist
-            available_modes = self.sensor_detector.get_available_modes()
-            if config.display_mode not in available_modes:
-                logger.error(f"Modus '{config.display_mode}' nicht verfügbar!")
-                from tkinter import messagebox
-                messagebox.showerror(
-                    "Fehler",
-                    f"Modus '{config.display_mode}' kann nicht gestartet werden!\n\n"
-                    f"Grund: PIR-Sensor nicht verfügbar.\n"
-                    f"Bitte wähle einen anderen Modus in der Konfiguration."
-                )
-                self.config_gui.show()
-                return
+            # Prüfe ob Modus verfügbar ist (nur für PIR-abhängige Modi)
+            if config.display_mode in ["pir", "time_pir"]:
+                # Nur bei PIR-Modi prüfen ob Sensor verfügbar ist
+                if not self.sensor_detector.is_pir_available():
+                    logger.error(f"Modus '{config.display_mode}' benötigt PIR-Sensor!")
+                    from tkinter import messagebox
+                    messagebox.showerror(
+                        "Fehler",
+                        f"Modus '{config.display_mode}' kann nicht gestartet werden!\n\n"
+                        f"Grund: PIR-Sensor nicht verfügbar.\n"
+                        f"Bitte wähle Modus 2 (Zeit) oder Modus 3 (24/7)."
+                    )
+                    self.config_gui.show()
+                    return
             
             # Erstelle Slideshow-Fenster NEU (mit aktueller Config!)
             logger.info("Erstelle Slideshow-Fenster...")
