@@ -87,11 +87,17 @@ cd /opt/raspi-app
 ### Update durchführen
 
 ```bash
-# Update-Skript ausführbar machen
+# Vollständiges Update (mit Backup, Config-Migration, etc.)
 chmod +x update.sh
-
-# Update durchführen
 sudo ./update.sh
+
+# Quick-Update (nur Dateien kopieren, für Entwicklung)
+chmod +x quick-update.sh
+sudo ./quick-update.sh
+
+# Dev-Update (noch schneller, startet direkt)
+chmod +x dev-update.sh
+./dev-update.sh
 ```
 
 **Hinweis:** Lese `UPDATE_GUIDE.md` für Details zum Update-Prozess.
@@ -284,11 +290,22 @@ source venv/bin/activate
 # Abhängigkeiten installieren
 pip install -r requirements.txt
 
-# App im Development-Modus installieren
-pip install -e .
-
 # App ausführen
 python -m app.main
+```
+
+### Schnelles Update während Entwicklung
+
+```bash
+# Code bearbeiten in src/app/...
+nano src/app/gui.py
+
+# Schnell aktualisieren und testen
+./dev-update.sh
+
+# Oder nur kopieren ohne zu starten
+sudo ./quick-update.sh
+./run.sh
 ```
 
 ### Eigene Anpassungen

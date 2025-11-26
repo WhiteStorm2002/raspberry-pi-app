@@ -283,9 +283,16 @@ class ConfigGUI:
         
         # Fullscreen
         self.vars['fullscreen'] = tk.BooleanVar(value=self.config.fullscreen)
-        ttk.Checkbutton(main_frame, text="Vollbildmodus", 
+        ttk.Checkbutton(main_frame, text="Vollbildmodus (ohne Ränder)", 
                        variable=self.vars['fullscreen']).grid(row=row, column=0, 
                                                                columnspan=2, sticky=tk.W, pady=5)
+        row += 1
+        
+        # Mauszeiger verstecken
+        self.vars['hide_cursor'] = tk.BooleanVar(value=self.config.hide_cursor)
+        ttk.Checkbutton(main_frame, text="Mauszeiger in Slideshow verstecken", 
+                       variable=self.vars['hide_cursor']).grid(row=row, column=0, 
+                                                                columnspan=2, sticky=tk.W, pady=5)
         row += 1
         
         # Status anzeigen
@@ -424,6 +431,7 @@ class ConfigGUI:
                 random_order=self.vars['random_order'].get(),
                 autostart=self.vars['autostart'].get(),
                 fullscreen=self.vars['fullscreen'].get(),
+                hide_cursor=self.vars['hide_cursor'].get(),
                 debug_mode=self.vars['debug_mode'].get(),
                 show_sensor_status=self.vars['show_sensor_status'].get()
             )
@@ -473,6 +481,7 @@ class ConfigGUI:
                 random_order=self.vars['random_order'].get(),
                 autostart=self.vars['autostart'].get(),
                 fullscreen=self.vars['fullscreen'].get(),
+                hide_cursor=self.vars['hide_cursor'].get(),
                 debug_mode=self.vars['debug_mode'].get(),
                 show_sensor_status=self.vars['show_sensor_status'].get()
             )

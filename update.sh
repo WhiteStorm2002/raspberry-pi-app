@@ -208,6 +208,11 @@ try:
         config['work_end_time'] = "17:00"
         updated = True
     
+    # Neue Felder für v1.4.0+
+    if 'hide_cursor' not in config:
+        config['hide_cursor'] = True
+        updated = True
+    
     # Update Version
     if 'version' not in config:
         config['version'] = "1.4.0"

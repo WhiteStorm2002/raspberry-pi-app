@@ -37,12 +37,17 @@ class SlideshowWindow:
         self.root = tk.Toplevel()
         self.root.title("Slideshow")
         
+        # Vollbild-Konfiguration (wie PowerPoint)
         if config.fullscreen:
             self.root.attributes('-fullscreen', True)
+            self.root.attributes('-topmost', True)  # Immer im Vordergrund
+            self.root.overrideredirect(True)  # Entfernt Fensterrahmen komplett
         else:
             self.root.geometry("1920x1080")
         
-        self.root.configure(bg='black')
+        # Mauszeiger verstecken (wenn aktiviert)
+        cursor_style = 'none' if config.hide_cursor else ''
+        self.root.configure(bg='black', cursor=cursor_style)
         self.root.protocol("WM_DELETE_WINDOW", self._on_closing)
         
         # Komponenten
@@ -100,15 +105,18 @@ class SlideshowWindow:
         else:
             self.status_label = None
         
-        # Info-Label (unten)
-        self.info_label = tk.Label(
-            self.main_frame,
-            text="ESC = Konfiguration | SPACE = Nächstes Bild",
-            fg='gray',
-            bg='black',
-            font=('Arial', 10)
-        )
-        self.info_label.place(relx=0.5, rely=0.98, anchor=tk.S)
+        # Info-Label (unten) - nur im Debug-Modus
+        if self.config.debug_mode:
+            self.info_label = tk.Label(
+                self.main_frame,
+                text="ESC = Konfiguration | SPACE = Nächstes Bild",
+                fg='gray',
+                bg='black',
+                font=('Arial', 10)
+            )
+            self.info_label.place(relx=0.5, rely=0.98, anchor=tk.S)
+        else:
+            self.info_label = None
     
     def _init_pir_sensor(self):
         """Initialisiert den PIR Sensor"""
@@ -309,6 +317,10 @@ class SlideshowWindow:
     def _on_escape(self, event=None):
         """ESC-Taste gedrückt - zurück zur Konfiguration"""
         logger.info("ESC gedrückt - zurück zur Konfiguration")
+        
+        # Mauszeiger wieder anzeigen
+        self.root.configure(cursor='')
+        
         self.stop()
         
         if self.on_exit_callback:
@@ -363,6 +375,16 @@ class SlideshowWindow:
         self.root.deiconify()
         self.root.lift()
         self.root.focus_force()
+        
+        # Verstecke Mauszeiger (wenn aktiviert)
+        if self.config.hide_cursor:
+            self.root.configure(cursor='none')
+        
+        # Stelle sicher dass Vollbild aktiv ist
+        if self.config.fullscreen:
+            self.root.attributes('-fullscreen', True)
+            self.root.attributes('-topmost', True)
+            self.root.overrideredirect(True)  # Keine Ränder!
     
     def hide(self):
         """Versteckt das Slideshow-Fenster"""

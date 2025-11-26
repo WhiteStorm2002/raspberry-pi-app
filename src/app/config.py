@@ -50,6 +50,7 @@ class AppConfig:
     # System
     autostart: bool = True
     fullscreen: bool = True
+    hide_cursor: bool = True  # Mauszeiger in Slideshow verstecken
     
     # Debug
     debug_mode: bool = False
