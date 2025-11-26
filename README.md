@@ -489,7 +489,7 @@ MIT License - siehe LICENSE-Datei für Details
 
 ## 👤 Autor
 
-Dein Name - deine.email@example.com
+Leon Haas - haas-leon-2002@gmx.de
 
 ## 🤝 Beitragen
 
