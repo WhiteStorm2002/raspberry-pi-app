@@ -361,13 +361,13 @@ class ConfigGUI:
         button_frame = ttk.Frame(main_frame)
         button_frame.grid(row=row, column=0, columnspan=2, pady=20)
         
-        ttk.Button(button_frame, text="Speichern", 
-                  command=self._save_config, width=15).pack(side=tk.LEFT, padx=5)
-        ttk.Button(button_frame, text="START", 
-                  command=self._start_slideshow, width=15, 
+        ttk.Button(button_frame, text="💾 Speichern", 
+                  command=self._save_config, width=18).pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, text="▶ START", 
+                  command=self._start_slideshow, width=18, 
                   style='Accent.TButton').pack(side=tk.LEFT, padx=5)
-        ttk.Button(button_frame, text="Beenden", 
-                  command=self._quit, width=15).pack(side=tk.LEFT, padx=5)
+        ttk.Button(button_frame, text="❌ Beenden", 
+                  command=self._quit, width=18).pack(side=tk.LEFT, padx=5)
         
         # Info-Text
         row += 1
@@ -431,9 +431,9 @@ class ConfigGUI:
             # Speichern
             if self.config_manager.save(new_config):
                 self.config = new_config
-                logger.info("Konfiguration gespeichert")
-                # Zeige Erfolg-Meldung nur beim manuellen Speichern
-                messagebox.showinfo("Erfolg", "Konfiguration gespeichert!")
+                logger.info("Konfiguration gespeichert (Speichern-Button)")
+                # Zeige Erfolg-Meldung
+                messagebox.showinfo("Erfolg", "Konfiguration erfolgreich gespeichert!")
             else:
                 messagebox.showerror("Fehler", "Konfiguration konnte nicht gespeichert werden!")
                 
@@ -444,7 +444,7 @@ class ConfigGUI:
     def _start_slideshow(self):
         """Startet die Slideshow"""
         try:
-            # Validiere und speichere Config ohne Messagebox
+            # Validiere und speichere Config OHNE Messagebox
             display_mode = self.vars['display_mode'].get()
             
             # Validierung
@@ -485,16 +485,19 @@ class ConfigGUI:
             self.config = new_config
             logger.info("Konfiguration gespeichert, starte Slideshow...")
             
-            # Fenster verstecken
-            self.root.withdraw()
-            
-            # Callback aufrufen
+            # WICHTIG: Callback ZUERST aufrufen, DANN Fenster verstecken
+            # Sonst wird die Messagebox blockiert
             if self.on_start_callback:
+                # Verstecke Fenster VOR dem Callback
+                self.root.withdraw()
+                # Rufe Callback auf (startet Slideshow)
                 self.on_start_callback()
                 
         except Exception as e:
             messagebox.showerror("Fehler", f"Fehler beim Starten: {e}")
             logger.error(f"Fehler beim Starten der Slideshow: {e}")
+            # Bei Fehler Fenster wieder anzeigen
+            self.root.deiconify()
     
     def _quit(self):
         """Beendet die Anwendung"""
