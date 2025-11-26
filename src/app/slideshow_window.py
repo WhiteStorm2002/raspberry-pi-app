@@ -170,8 +170,10 @@ class SlideshowWindow:
             image_path = self.slideshow.get_next_image()
             
             if not image_path:
-                self._update_status("Keine Bilder gefunden!")
-                logger.warning("Keine Bilder im Ordner")
+                error_msg = f"Keine Bilder gefunden!\nOrdner: {self.config.image_folder}"
+                self._update_status(error_msg)
+                logger.error(f"Keine Bilder im Ordner: {self.config.image_folder}")
+                logger.error(f"Bitte füge Bilder hinzu oder ändere den Pfad in der Konfiguration")
                 return
             
             # Lade und zeige Bild

@@ -41,15 +41,25 @@ class Slideshow:
         """Lädt alle Bilder aus dem Ordner"""
         self.images = []
         
+        logger.info(f"Lade Bilder aus: {self.image_folder}")
+        
         if not self.image_folder.exists():
-            logger.warning(f"Bildordner existiert nicht: {self.image_folder}")
+            logger.error(f"Bildordner existiert nicht: {self.image_folder}")
             self.image_folder.mkdir(parents=True, exist_ok=True)
             return
         
         # Sammle alle unterstützten Bilddateien
         for ext in self.SUPPORTED_FORMATS:
-            self.images.extend(self.image_folder.glob(f'*{ext}'))
-            self.images.extend(self.image_folder.glob(f'*{ext.upper()}'))
+            found = list(self.image_folder.glob(f'*{ext}'))
+            self.images.extend(found)
+            logger.debug(f"Gefunden mit {ext}: {len(found)} Dateien")
+            
+            found_upper = list(self.image_folder.glob(f'*{ext.upper()}'))
+            self.images.extend(found_upper)
+            logger.debug(f"Gefunden mit {ext.upper()}: {len(found_upper)} Dateien")
+        
+        # Entferne Duplikate
+        self.images = list(set(self.images))
         
         # Sortiere oder mische
         if self.random_order:
@@ -57,7 +67,11 @@ class Slideshow:
         else:
             self.images.sort()
         
-        logger.info(f"{len(self.images)} Bilder geladen")
+        logger.info(f"{len(self.images)} Bilder geladen aus {self.image_folder}")
+        
+        if len(self.images) == 0:
+            logger.warning(f"KEINE Bilder gefunden in: {self.image_folder}")
+            logger.warning(f"Unterstützte Formate: {', '.join(self.SUPPORTED_FORMATS)}")
     
     def reload_images(self):
         """Lädt die Bilderliste neu"""
