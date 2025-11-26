@@ -37,18 +37,26 @@ class SlideshowWindow:
         self.root = tk.Toplevel()
         self.root.title("Slideshow")
         
+        # Erst normale Größe, dann Vollbild (verhindert Probleme)
+        self.root.geometry("1920x1080")
+        self.root.configure(bg='black')
+        
         # Vollbild-Konfiguration (wie PowerPoint)
         if config.fullscreen:
-            self.root.attributes('-fullscreen', True)
-            self.root.attributes('-topmost', True)  # Immer im Vordergrund
-            self.root.overrideredirect(True)  # Entfernt Fensterrahmen komplett
-        else:
-            self.root.geometry("1920x1080")
+            # Warte kurz, dann aktiviere Vollbild
+            self.root.after(100, lambda: self.root.attributes('-fullscreen', True))
+            self.root.after(150, lambda: self.root.attributes('-topmost', True))
+            self.root.after(200, lambda: self.root.overrideredirect(True))
         
         # Mauszeiger verstecken (wenn aktiviert)
         cursor_style = 'none' if getattr(config, 'hide_cursor', True) else ''
-        self.root.configure(bg='black', cursor=cursor_style)
+        self.root.configure(cursor=cursor_style)
         self.root.protocol("WM_DELETE_WINDOW", self._on_closing)
+        
+        # Fenster initial verstecken (wird bei start() angezeigt)
+        self.root.withdraw()
+        
+        logger.info("Slideshow-Fenster erstellt (versteckt)")
         
         # Komponenten
         self.slideshow = Slideshow(config.image_folder, config.random_order)
@@ -78,8 +86,6 @@ class SlideshowWindow:
         # PIR Sensor initialisieren (im PIR-Modus und Zeit+PIR-Modus)
         if config.display_mode in ["pir", "time_pir"]:
             self._init_pir_sensor()
-        
-        logger.info("Slideshow-Fenster erstellt")
     
     def _create_widgets(self):
         """Erstellt die GUI-Elemente"""
@@ -337,6 +343,8 @@ class SlideshowWindow:
         if self.running:
             return
         
+        logger.info("Starte Slideshow-Komponenten...")
+        
         self.running = True
         self.screen_active = True
         self.last_motion_time = time.time()
@@ -345,13 +353,19 @@ class SlideshowWindow:
         # Bildschirm einschalten
         self.screen_controller.turn_on()
         
+        # Fenster sichtbar machen und fokussieren
+        self.root.deiconify()
+        self.root.lift()
+        self.root.attributes('-topmost', True)
+        self.root.focus_force()
+        
         # Erstes Bild anzeigen
         self.root.after(100, self._next_image)
         
         # Update-Schleife starten
         self.root.after(200, self._update_loop)
         
-        logger.info("Slideshow gestartet")
+        logger.info("Slideshow gestartet und Fenster angezeigt")
     
     def stop(self):
         """Stoppt die Slideshow"""

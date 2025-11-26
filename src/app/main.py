@@ -114,17 +114,21 @@ class EntranceDisplayApp:
                 on_exit_callback=self._stop_slideshow
             )
             
+            logger.info("Slideshow-Fenster erstellt")
+            
             # Verstecke Config-GUI
+            logger.info("Verstecke Config-GUI...")
             self.config_gui.hide()
             
-            # Zeige und starte Slideshow
-            logger.info("Zeige Slideshow-Fenster...")
-            self.slideshow_window.show()
-            
+            # Starte Slideshow (zeigt Fenster automatisch)
             logger.info("Starte Slideshow...")
             self.slideshow_window.start()
             
             logger.info("Slideshow erfolgreich gestartet!")
+            
+            # Force update um sicherzustellen dass Fenster angezeigt wird
+            self.slideshow_window.root.update()
+            self.slideshow_window.root.update_idletasks()
             
         except Exception as e:
             logger.error(f"Fehler beim Starten der Slideshow: {e}")
