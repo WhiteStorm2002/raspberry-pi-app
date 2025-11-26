@@ -38,8 +38,11 @@ class ConfigGUI:
         # Hauptfenster
         self.root = tk.Tk()
         self.root.title("Eingangsbereich Display - Konfiguration")
-        self.root.geometry("800x650")
+        self.root.geometry("850x700")
         self.root.resizable(True, True)
+        
+        # Minimale Fenstergröße
+        self.root.minsize(800, 600)
         
         # Variablen
         self.vars = {}
@@ -52,12 +55,55 @@ class ConfigGUI:
     def _create_widgets(self):
         """Erstellt alle GUI-Elemente"""
         
-        # Hauptcontainer mit Scrollbar
-        main_frame = ttk.Frame(self.root, padding="10")
-        main_frame.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        # Hauptcontainer mit Canvas und Scrollbar
+        container = ttk.Frame(self.root)
+        container.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
         
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
+        container.columnconfigure(0, weight=1)
+        container.rowconfigure(0, weight=1)
+        
+        # Canvas für Scrolling
+        canvas = tk.Canvas(container, highlightthickness=0)
+        canvas.grid(row=0, column=0, sticky=(tk.W, tk.E, tk.N, tk.S))
+        
+        # Scrollbar
+        scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
+        scrollbar.grid(row=0, column=1, sticky=(tk.N, tk.S))
+        
+        # Konfiguriere Canvas
+        canvas.configure(yscrollcommand=scrollbar.set)
+        
+        # Frame innerhalb Canvas
+        main_frame = ttk.Frame(canvas, padding="10")
+        canvas_window = canvas.create_window((0, 0), window=main_frame, anchor="nw")
+        
+        # Update scroll region wenn sich Größe ändert
+        def configure_scroll_region(event=None):
+            canvas.configure(scrollregion=canvas.bbox("all"))
+            # Passe Canvas-Breite an
+            canvas_width = event.width if event else canvas.winfo_width()
+            canvas.itemconfig(canvas_window, width=canvas_width)
+        
+        main_frame.bind("<Configure>", configure_scroll_region)
+        canvas.bind("<Configure>", configure_scroll_region)
+        
+        # Mausrad-Scrolling
+        def on_mousewheel(event):
+            canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+        
+        def on_mousewheel_linux(event):
+            if event.num == 4:
+                canvas.yview_scroll(-1, "units")
+            elif event.num == 5:
+                canvas.yview_scroll(1, "units")
+        
+        # Bind Mausrad (Windows/Mac)
+        canvas.bind_all("<MouseWheel>", on_mousewheel)
+        # Bind Mausrad (Linux)
+        canvas.bind_all("<Button-4>", on_mousewheel_linux)
+        canvas.bind_all("<Button-5>", on_mousewheel_linux)
         
         # Titel
         title = ttk.Label(main_frame, text="Eingangsbereich Display Konfiguration", 
